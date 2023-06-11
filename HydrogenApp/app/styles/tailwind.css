@@ -1,0 +1,24 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* @tailwind variants; */
+
+@layer components {
+  /* Form style */
+
+  .form {
+  }
+
+  .form-healthy {
+  }
+
+  /* Button style */
+  .btn {
+  }
+
+  .btn-healthy {
+  }
+
+  .btn-outline-healthy {
+  }
+}

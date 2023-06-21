@@ -33,6 +33,39 @@
   }
 
   .btn-outline-primary {
-    @apply border border-green-700 hover:bg-green-200;
+    @apply border border-green-700 hover:bg-[rgb(183,212,183)] hover:text-green-900;
+  }
+
+  /* Slider style */
+  .slider {
+    display: flex;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    overflow-x: auto;
+    width: 100%;
+  }
+
+  .slider-item {
+    flex-grow: 0;
+    flex-shrink: 0;
+    flex-basis: auto;
+    scroll-snap-align: start;
+  }
+
+  /* Card style */
+  .card {
+    @apply border-[1.5px] border-green-700 hover:opacity-50 rounded-2xl p-4;
+  }
+}
+
+@layer utilities {
+  /* Chrome, Safari and Opera */
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none; /* Firefox */
   }
 }

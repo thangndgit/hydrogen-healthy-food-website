@@ -1,4 +1,5 @@
 import Header from './Header';
+import Footer from './Footer';
 
 export function Layout({children, title}) {
   return (
@@ -13,6 +14,7 @@ export function Layout({children, title}) {
       >
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

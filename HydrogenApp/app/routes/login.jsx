@@ -10,12 +10,11 @@ export default function Login() {
   return (
     <div
       id="page-login"
-      className="w-screen flex flex-wrap text-green-700"
-      style={{height: 'calc(100vh - 56px)'}}
+      className="w-screen h-[calc(100vh-72px)] flex flex-wrap text-green-700"
     >
       <div className="bg-[url('~/assets/images/login-banner.png')] bg-center w-0 md:w-1/3 lg:w-1/2"></div>
-      <div className="w-full p-3 md:w-2/3 lg:w-1/2">
-        <div className="max-w-xs m-auto flex flex-col gap-3 mt-2">
+      <div className="w-full px-3 md:w-2/3 lg:w-1/2">
+        <div className="max-w-xs m-auto flex flex-col gap-3 mt-[calc((100vh-72px-596px)/2)]">
           <Image
             data={{altText: 'logo', url: imagePathToUrl(logoImg)}}
             alt="logo"

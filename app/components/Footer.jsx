@@ -3,11 +3,16 @@ import {BiHeadphone, BiPaperPlane} from 'react-icons/bi';
 
 export default function Footer() {
   const location = useLocation();
-  const blockedPaths = ['/login', '/register'];
+  const blockedPaths = [
+    '/login',
+    '/register',
+    '/forget-password',
+    '/reset-password',
+  ];
 
   if (!blockedPaths.includes(location.pathname))
     return (
-      <footer className="bg-[rgb(183,212,183)] w-full px-4 p-8 lg:px-12 text-green-700">
+      <footer className="bg-[rgb(183,212,183)] w-full px-4 p-8 lg:px-12 text-green-700 mt-20">
         <div className="rounded-xl p-8 bg-white">
           <div className="flex flex-nowrap gap-6 w-fit flex-col lg:w-full lg:gap-8 lg:flex-row lg:justify-between lg:items-center max-w-5xl m-auto">
             <div className="text-xl font-semibold">

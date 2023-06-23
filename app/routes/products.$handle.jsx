@@ -100,7 +100,7 @@ function ProductGallery({media}) {
 
   return (
     <div
-      className={`grid gap-4 overflow-x-scroll grid-flow-col md:grid-flow-row  md:p-0 md:overflow-x-auto md:grid-cols-2 w-[90vw] md:w-full lg:col-span-2`}
+      className={`grid gap-4 overflow-x-scroll grid-flow-col md:grid-flow-row md:p-0 md:overflow-x-auto md:grid-cols-2 w-[90vw] md:w-full lg:col-span-2`}
     >
       {media.map((med, i) => {
         let extraProps = {};

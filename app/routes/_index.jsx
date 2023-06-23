@@ -1,11 +1,14 @@
 import {Link, useLoaderData} from '@remix-run/react';
-import {Image} from '@shopify/hydrogen-react';
-import HeroSlider from '~/components/HeroSlider';
-import ProductItem from '~/components/ProductItem';
+import {useCallback, useEffect, useState} from 'react';
 
-import menuBanner from '~/assets/images/menu-banner.jpg';
-import {MdLocalShipping} from 'react-icons/md';
 import {RiLockFill, RiVipCrownFill} from 'react-icons/ri';
+import {MdLocalShipping} from 'react-icons/md';
+import {RxDotFilled} from 'react-icons/rx';
+import {BsChevronCompactLeft, BsChevronCompactRight} from 'react-icons/bs';
+
+import DishGrid from '~/components/DishGrid';
+import menuBanner from '~/assets/images/menu-banner.jpg';
+import {fieldsToObject} from '~/utils/converters';
 
 export function meta() {
   return [
@@ -15,73 +18,128 @@ export function meta() {
 }
 
 export async function loader({context}) {
-  return await context.storefront.query(COLLECTIONS_QUERY);
+  const banners = await context.storefront.query(BANNERS_QUERY);
+  const products = await context.storefront.query(PRODUCTS_QUERY);
+  const collections = await context.storefront.query(COLLECTIONS_QUERY);
+
+  return {
+    banners: banners?.metaobjects?.edges?.map((banner) => ({
+      id: banner?.node?.id,
+      ...fieldsToObject(banner?.node?.fields),
+    })),
+    products: products?.products?.edges,
+    collections: collections?.collections?.nodes,
+  };
 }
 
 export default function Index() {
-  const {collections} = useLoaderData();
+  const {banners, products, collections} = useLoaderData();
+
   return (
     <>
       <section className="w-full">
-        <HeroSlider />
+        <HeroSlider banners={banners} />
       </section>
       <section className="w-[92vw] mx-auto mt-8 text-green-700">
-        <h1 className="font-bold text-xl mb-4">Món ăn nổi bật</h1>
-        <ProductList />
+        <h1 className="font-bold text-xl md:text-2xl mb-4">Món ăn nổi bật</h1>
+        <DishGrid products={products} path="/dishes" />
       </section>
       <section className="w-[92vw] mx-auto mt-8 text-green-700">
-        <h1 className="font-bold text-xl mb-4">Món ăn theo chủ đề</h1>
-        <CategorySlider />
+        <h1 className="font-bold text-xl md:text-2xl mb-4">
+          Món ăn theo chủ đề
+        </h1>
+        <CategorySlider collections={collections} />
       </section>
       <section className="w-[92vw] mx-auto mt-8 text-white">
         <MenuBanner />
       </section>
       <section className="w-[92vw] mx-auto mt-8 text-green-700">
-        <h1 className="font-bold text-xl mb-4">Thực đơn hôm nay</h1>
+        <h1 className="font-bold text-xl md:text-2xl mb-4">Thực đơn hôm nay</h1>
         <MenuSlider />
       </section>
       <section className="w-[92vw] mx-auto mt-8 text-green-700">
         <InfoBanner />
       </section>
-      <section className="w-[92vw] mx-auto mt-8 mb-12 text-green-700">
-        <h1 className="font-bold text-xl mb-4">Nhận xét của khách hàng</h1>
+      <section className="w-[92vw] mx-auto mt-8 text-green-700">
+        <h1 className="font-bold text-xl md:text-2xl mb-4">
+          Nhận xét của khách hàng
+        </h1>
         <FeedbackSlider />
       </section>
-      {/* <section className="w-[92vw] mx-auto mt-8">
-        <h2 className="whitespace-pre-wrap max-w-prose font-bold text-lead">
-          Collections
-        </h2>
-        <div className="grid-flow-row grid gap-2 gap-y-6 md:gap-4 lg:gap-6 grid-cols-1 false  sm:grid-cols-3 false false">
-          {collections.nodes.map((collection) => {
-            return (
-              <Link
-                to={`/collections/${collection.handle}`}
-                key={collection.id}
-              >
-                <div className="grid gap-4">
-                  {collection?.image && (
-                    <Image
-                      alt={`Image of ${collection.title}`}
-                      data={collection.image}
-                      key={collection.id}
-                      sizes="(max-width: 32em) 100vw, 33vw"
-                      widths={[400, 500, 600, 700, 800, 900]}
-                      loaderOptions={{
-                        scale: 2,
-                        crop: 'center',
-                      }}
-                    />
-                  )}
-                  <h2 className="whitespace-pre-wrap max-w-prose font-medium text-copy">
-                    {collection.title}
-                  </h2>
-                </div>
-              </Link>
-            );
-          })}
-        </div>
-      </section> */}
     </>
+  );
+}
+
+function HeroSlider({banners}) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const prevSlide = () => {
+    const isFirstSlide = currentIndex === 0;
+    const newIndex = isFirstSlide ? banners?.length - 1 : currentIndex - 1;
+    setCurrentIndex(newIndex);
+  };
+
+  const nextSlide = useCallback(() => {
+    const isLastSlide = currentIndex === banners?.length - 1;
+    const newIndex = isLastSlide ? 0 : currentIndex + 1;
+    setCurrentIndex(newIndex);
+  }, [banners?.length, currentIndex]);
+
+  const goToSlide = (slideIndex) => {
+    setCurrentIndex(slideIndex);
+  };
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      nextSlide();
+    }, 3000);
+
+    return () => clearInterval(timer);
+  }, [nextSlide]);
+
+  return (
+    <div className="h-[calc(100vh-56px)] lg:h-[calc(100vh-120px)] w-full m-auto relative group">
+      <div
+        style={{
+          backgroundImage: `url('${banners[currentIndex]?.image_url}')`,
+        }}
+        className="w-full h-full bg-center bg-cover duration-500 bg-green-700 text-center"
+      >
+        <Link
+          to={banners[currentIndex]?.destination_path}
+          className="drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.25)] h-full flex flex-col justify-end gap-6 py-[15vh] px-[15vw] text-white"
+        >
+          <h2 className="font-bold text-3xl">{banners[currentIndex]?.title}</h2>
+          <p className="text-lg text-justify">
+            {banners[currentIndex]?.description}
+          </p>
+        </Link>
+      </div>
+      {/* Left Arrow */}
+      <div className="hidden group-hover:block absolute top-[50%] -translate-x-0 translate-y-[-50%] left-5 text-2xl rounded-full p-2 bg-black/20 cursor-pointer">
+        <BsChevronCompactLeft fill="white" onClick={prevSlide} size={30} />
+      </div>
+      {/* Right Arrow */}
+      <div className="hidden group-hover:block absolute top-[50%] -translate-x-0 translate-y-[-50%] right-5 text-2xl rounded-full p-2 bg-black/20 cursor-pointer">
+        <BsChevronCompactRight fill="white" onClick={nextSlide} size={30} />
+      </div>
+      <div className="flex top-4 justify-center py-2 -translate-y-12">
+        {banners?.map((banner, bannerIndex) => (
+          <button
+            key={banner.id}
+            onClick={() => goToSlide(bannerIndex)}
+            onKeyDown={() => {}}
+            className={`cursor-pointer ${
+              bannerIndex === currentIndex
+                ? 'text-3xl text-gray-100'
+                : 'text-2xl text-gray-300'
+            }`}
+          >
+            <RxDotFilled />
+          </button>
+        ))}
+      </div>
+    </div>
   );
 }
 
@@ -93,10 +151,10 @@ function MenuBanner() {
     >
       <Link
         to="/menu"
-        className="p-6 h-full drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] bg-gradient-to-b from-transparent to-green-700 opacity-90 flex flex-col gap-4 justify-center items-center font-bold text-2xl text-center rounded-2xl"
+        className="p-6 h-full drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.25)] opacity-90 flex flex-col gap-4 justify-center items-center font-bold text-xl md:text-2xl text-center rounded-2xl"
       >
-        <p className="w-2/3">Bạn có chế độ ăn khắt khe?</p>
-        <p className="w-2/3">Tạo đơn theo chế độ ăn tại đây!</p>
+        <p>Bạn có chế độ ăn khắt khe?</p>
+        <p>Tạo đơn theo chế độ ăn tại đây!</p>
       </Link>
     </div>
   );
@@ -163,7 +221,7 @@ function MenuSlider() {
           key={menu.handle}
         />
       ))}
-      <div className="card slider-item w-[150px]">
+      <div className="card slider-item w-[175px]">
         <Link
           to="/menus"
           className="w-full h-full flex justify-center items-center text-xl whitespace-nowrap"
@@ -196,87 +254,34 @@ function MenuCard({data, className}) {
   );
 }
 
-function CategorySlider() {
-  const categories = [
-    {
-      name: 'Món khai vị',
-      handle: 'mon-khai-vi',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 12,
-    },
-    {
-      name: 'Món chính',
-      handle: 'mon-chinh',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 10,
-    },
-    {
-      name: 'Tráng miệng',
-      handle: 'mon-trang-mieng',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 10,
-    },
-    {
-      name: 'Đồ ăn nhanh',
-      handle: 'do-an-nhanh',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 15,
-    },
-    {
-      name: 'Đồ ăn vặt',
-      handle: 'do-an-vat',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 12,
-    },
-    {
-      name: 'Đồ uống',
-      handle: 'do-uong',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 18,
-    },
-  ];
-
+function CategorySlider({collections}) {
   return (
     <div className="slider gap-4 px-[1.5vw] no-scrollbar">
-      {categories.map((cate) => (
+      {collections?.map((collection) => (
         <CategoryCard
-          className="slider-item w-[82vw] max-w-[300px]"
-          data={cate}
-          key={cate.handle}
+          className="slider-item w-[82vw] max-w-[320px]"
+          collection={collection}
+          key={collection.handle}
         />
       ))}
-      <div className="card slider-item w-[150px]">
-        <Link
-          to="/categories"
-          className="w-full h-full flex justify-center items-center text-xl whitespace-nowrap"
-        >
-          Xem tất cả
-        </Link>
-      </div>
     </div>
   );
 }
 
-function CategoryCard({data, className}) {
+function CategoryCard({collection, className}) {
   return (
     <div className={`card ${className}`}>
       <Link
-        to={`/categories/${data.handle}`}
-        className="flex flex-nowrap justify-center items-center text-center"
+        to={`/categories/${collection?.handle}`}
+        className="flex flex-nowrap justify-between items-center text-center"
       >
         <div
-          style={{backgroundImage: `url('${data.imageUrl}')`}}
+          style={{backgroundImage: `url('${collection?.image?.url}')`}}
           className="w-1/2 bg-center bg-cover aspect-square rounded-xl"
         />
         <div className="w-1/2 text-green-700">
-          <h3 className="font-bold">{data.name}</h3>
-          <p>{`(${data.count} món)`}</p>
+          <h3 className="font-bold">{collection?.title}</h3>
+          <p>{`(${collection?.products?.edges?.length} món)`}</p>
         </div>
       </Link>
     </div>
@@ -308,32 +313,6 @@ function InfoBanner() {
             <p>Thông tin được mã hóa</p>
           </div>
         </div>
-      </div>
-    </div>
-  );
-}
-
-function ProductList() {
-  return (
-    <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <ProductItem />
-      <div className="card">
-        <Link
-          to="/products"
-          className="w-full h-full flex justify-center items-center text-xl"
-        >
-          Xem tất cả
-        </Link>
       </div>
     </div>
   );
@@ -412,17 +391,64 @@ function FeedbackCard({data, className}) {
 }
 
 const COLLECTIONS_QUERY = `#graphql
-  query FeaturedCollections {
-    collections(first: 3, query: "collection_type:smart") {
-      nodes {
+  query {
+    collections(first:100){
+      nodes{
         id
         title
         handle
         image {
-          altText
-          width
-          height
           url
+        }
+        products(first:250) {
+          edges {
+            node {
+              id
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+const BANNERS_QUERY = `#graphql
+  query {
+    metaobjects(first:10, type:"banner") {
+      edges {
+        node {
+          id
+          type
+          fields {
+            key
+            value
+          }
+        }
+      }
+    }
+  }
+`;
+
+const PRODUCTS_QUERY = `#graphql
+  query {
+    products(first:9) {
+      edges {
+        node {
+          id
+          title
+          handle
+          totalInventory
+          featuredImage{
+            url
+          }
+          priceRange{
+            minVariantPrice{
+              amount
+            }
+            maxVariantPrice{
+              amount
+            }
+          }
         }
       }
     }

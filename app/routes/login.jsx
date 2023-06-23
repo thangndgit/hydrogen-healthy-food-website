@@ -1,7 +1,7 @@
 import {Link} from '@remix-run/react';
 import {Image} from '@shopify/hydrogen';
-import {FcGoogle} from 'react-icons/fc';
-import {BsFacebook} from 'react-icons/bs';
+// import {FcGoogle} from 'react-icons/fc';
+// import {BsFacebook} from 'react-icons/bs';
 
 import logoImg from '~/assets/images/logo-big.png';
 import {imagePathToUrl} from '~/utils/converters';
@@ -14,7 +14,8 @@ export default function Login() {
     >
       <div className="bg-[url('~/assets/images/login-banner.png')] bg-center w-0 md:w-1/3 lg:w-1/2"></div>
       <div className="w-full px-3 md:w-2/3 lg:w-1/2">
-        <div className="max-w-xs m-auto flex flex-col gap-3 mt-[calc((100vh-72px-596px)/2)]">
+        {/* <div className="max-w-xs m-auto flex flex-col gap-3 mt-[calc((100vh-72px-596px)/2)]"> */}
+        <div className="max-w-xs m-auto flex flex-col gap-3 mt-[calc((100vh-72px-526.5px)/2)]">
           <Image
             data={{altText: 'logo', url: imagePathToUrl(logoImg)}}
             alt="logo"
@@ -26,7 +27,7 @@ export default function Login() {
             <div className="h-0 border border-t-green-700 grow" />
           </div>
 
-          <div className="grid gap-3 grid-cols-2 mt-3">
+          {/* <div className="grid gap-3 grid-cols-2 mt-3">
             <button className="btn btn-outline-primary flex gap-2">
               <FcGoogle style={{height: '28px', width: '28px'}} />
               Google
@@ -38,7 +39,7 @@ export default function Login() {
               />
               Facebook
             </button>
-          </div>
+          </div> */}
 
           <form className="form">
             <label htmlFor="email" className="mt-2">

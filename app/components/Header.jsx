@@ -26,17 +26,17 @@ export default function Header() {
     items: [
       {
         title: 'Danh mục',
-        to: '/login',
+        to: '/categories',
         icon: <BiCategory />,
       },
       {
         title: 'Món ăn',
-        to: '/products',
+        to: '/dishes',
         icon: <BiDish />,
       },
       {
         title: 'Thực đơn',
-        to: '/food-menu',
+        to: '/menus',
         icon: <BiFoodMenu />,
       },
     ],

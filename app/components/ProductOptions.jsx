@@ -29,7 +29,7 @@ export default function ProductOptions({options, selectedVariant}) {
     : paramsWithDefaults;
 
   return (
-    <div className="grid gap-4 mb-6">
+    <div className="grid gap-4">
       {options.map((option) => {
         if (!option.values.length) return;
 
@@ -43,7 +43,7 @@ export default function ProductOptions({options, selectedVariant}) {
             <h3 className="whitespace-pre-wrap max-w-prose font--bold text-lead min-w[4rem]">
               <b>{option.name}</b>
             </h3>
-            <div className="flex flex-wrap items-baseline gap-4">
+            <div className="flex flex-wrap items-baseline gap-6">
               {option.values.map((value) => {
                 const linkParams = new URLSearchParams(search);
                 const isSelected = value === currentOptionVal;
@@ -55,7 +55,9 @@ export default function ProductOptions({options, selectedVariant}) {
                     preventScrollReset
                     replace
                     className={`leading-none py-1 border-b-[1.5px] cursor-pointer transition-all duration-200 ${
-                      isSelected ? 'border-gray-500' : 'border-neutral-50'
+                      isSelected
+                        ? 'border-gray-500 font-semibold'
+                        : 'border-neutral-50'
                     }`}
                   >
                     {value}

@@ -4,7 +4,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useLoaderData,
 } from '@remix-run/react';
 import tailwind from './styles/tailwind-build.css';
 import styles from './styles/app.css';
@@ -28,16 +27,7 @@ export const links = () => {
   ];
 };
 
-export async function loader({context}) {
-  const layout = await context.storefront.query(LAYOUT_QUERY);
-  return {layout};
-}
-
 export default function App() {
-  const data = useLoaderData();
-
-  const {name} = data.layout.shop;
-
   return (
     <html lang="en">
       <head>
@@ -49,7 +39,7 @@ export default function App() {
       </head>
       <body>
         <div id="root-layout"></div>
-        <Layout title={name}>
+        <Layout>
           <Outlet />
         </Layout>
         <ScrollRestoration />
@@ -58,12 +48,3 @@ export default function App() {
     </html>
   );
 }
-
-const LAYOUT_QUERY = `#graphql
-  query layout {
-    shop {
-      name
-      description
-    }
-  }
-`;

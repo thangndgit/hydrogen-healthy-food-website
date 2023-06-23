@@ -1,10 +1,10 @@
 import Header from './Header';
 import Footer from './Footer';
 
-export function Layout({children, title}) {
+export function Layout({children}) {
   return (
     <div className="flex flex-col min-h-screen antialiased bg-neutral-50">
-      <Header title={title} />
+      <Header />
 
       <main
         role="main"

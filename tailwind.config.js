@@ -9,7 +9,11 @@ function withOpacityValue(variable) {
 }
 
 module.exports = {
-  content: ['./app/**/*.{js,ts,jsx,tsx}'],
+  mode: 'all',
+  content: [
+    './app/**/*.{js,ts,jsx,tsx}',
+    'node_modules/react-toastify/dist/ReactToastify.css',
+  ],
   theme: {
     extend: {
       colors: {

@@ -1,25 +1,33 @@
 import {Link} from '@remix-run/react';
+import {Money} from '@shopify/hydrogen-react';
 import {useMemo} from 'react';
 
 export default function DishCard({product}) {
-  const priceText = useMemo(() => {
-    if (!product?.totalInventory) return 'Hết món';
+  const priceComponent = useMemo(() => {
+    const totalInventory = product?.totalInventory;
+    const minPrice = product?.priceRange?.minVariantPrice;
+    const maxPrice = product?.priceRange?.maxVariantPrice;
 
-    if (
-      product?.priceRange?.maxVariantPrice?.amount ===
-      product?.priceRange?.minVariantPrice?.amount
-    )
-      return Number(
-        product?.priceRange?.minVariantPrice?.amount,
-      ).toLocaleString();
+    if (!totalInventory)
+      return <p className="font-semibold text-black">Hết món</p>;
+
+    if (minPrice?.amount === maxPrice?.amount)
+      return (
+        <p className="font-semibold text-black">
+          <Money withoutTrailingZeros data={minPrice} as="span" />
+        </p>
+      );
+
     return (
-      Number(product?.priceRange?.minVariantPrice?.amount).toLocaleString() +
-      ' - ' +
-      Number(product?.priceRange?.maxVariantPrice?.amount).toLocaleString()
+      <p className="font-semibold text-black">
+        <Money withoutTrailingZeros data={minPrice} as="span" />
+        <span> - </span>
+        <Money withoutTrailingZeros data={maxPrice} as="span" />
+      </p>
     );
   }, [
-    product?.priceRange?.maxVariantPrice?.amount,
-    product?.priceRange?.minVariantPrice?.amount,
+    product?.priceRange?.maxVariantPrice,
+    product?.priceRange?.minVariantPrice,
     product?.totalInventory,
   ]);
 
@@ -35,7 +43,7 @@ export default function DishCard({product}) {
         className={`card aspect-square bg-center bg-cover`}
       />
       <h3 className="font-bold">{product?.title}</h3>
-      <p className="font-semibold text-black">{priceText} Đ</p>
+      {priceComponent}
     </Link>
   );
 }

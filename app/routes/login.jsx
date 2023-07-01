@@ -1,17 +1,117 @@
-import {Link} from '@remix-run/react';
+import {json, redirect} from '@shopify/remix-oxygen';
+import {Form, Link, useActionData} from '@remix-run/react';
 import {Image} from '@shopify/hydrogen';
-// import {FcGoogle} from 'react-icons/fc';
-// import {BsFacebook} from 'react-icons/bs';
-
 import logoImg from '~/assets/images/logo-big.png';
 import {imagePathToUrl} from '~/utils/converters';
+import {ToastContainer, toast} from 'react-toastify';
+import {useEffect} from 'react';
+
+export const handle = {isPublic: true};
+
+export async function loader({context}) {
+  const customerAccessToken = await context.session.get('customerAccessToken');
+
+  if (customerAccessToken) {
+    return redirect('/account');
+  }
+
+  return json({shopName: 'FitMealsDeli'});
+}
+
+const badRequest = (data) => json(data, {status: 400});
+
+export const action = async ({request, context, params}) => {
+  const formData = await request.formData();
+
+  const email = formData.get('email');
+  const password = formData.get('password');
+
+  if (!email || !password) {
+    return badRequest({
+      formError: 'Bạn chưa nhập đủ thông tin',
+      timeError: new Date(),
+    });
+  }
+
+  if (
+    !email.match(
+      /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/,
+    )
+  ) {
+    return badRequest({
+      formError: 'Sai định dạng email',
+      timeError: new Date(),
+    });
+  }
+
+  const {session, storefront} = context;
+
+  try {
+    const customerAccessToken = await doLogin(context, {email, password});
+    session.set('customerAccessToken', customerAccessToken);
+
+    return redirect(params.lang ? `/${params.lang}/account` : '/account', {
+      headers: {
+        'Set-Cookie': await session.commit(),
+      },
+    });
+  } catch (error) {
+    if (storefront.isApiError(error)) {
+      return badRequest({
+        formError: 'Có lỗi xảy ra. Vui lòng thử lại sau.',
+        timeError: new Date(),
+      });
+    }
+
+    /**
+     * The user did something wrong, but the raw error from the API is not super friendly.
+     * Let's make one up.
+     */
+    return badRequest({
+      formError: 'Sai thông tin đăng nhập.',
+      timeError: new Date(),
+    });
+  }
+};
+
+export const meta = () => {
+  return [{title: 'Đăng nhập'}];
+};
 
 export default function Login() {
+  const actionData = useActionData();
+
+  useEffect(() => {
+    if (actionData?.formError)
+      toast.error(actionData?.formError, {
+        position: 'top-center',
+        autoClose: 1500,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: 'light',
+      });
+  }, [actionData?.formError, actionData?.timeError]);
+
   return (
     <div
       id="page-login"
       className="w-screen h-[calc(100vh-72px)] flex flex-wrap text-green-700"
     >
+      <ToastContainer
+        position="top-center"
+        autoClose={1500}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <div className="bg-[url('~/assets/images/login-banner.png')] bg-center w-0 md:w-1/3 lg:w-1/2"></div>
       <div className="w-full px-3 md:w-2/3 lg:w-1/2">
         {/* <div className="max-w-xs m-auto flex flex-col gap-3 mt-[calc((100vh-72px-596px)/2)]"> */}
@@ -27,27 +127,17 @@ export default function Login() {
             <div className="h-0 border border-t-green-700 grow" />
           </div>
 
-          {/* <div className="grid gap-3 grid-cols-2 mt-3">
-            <button className="btn btn-outline-primary flex gap-2">
-              <FcGoogle style={{height: '28px', width: '28px'}} />
-              Google
-            </button>
-            <button className="btn btn-outline-primary flex gap-2">
-              <BsFacebook
-                style={{height: '28px', width: '28px'}}
-                fill="#1877F2"
-              />
-              Facebook
-            </button>
-          </div> */}
-
-          <form className="form">
+          <Form method="post" noValidate className="form">
             <label htmlFor="email" className="mt-2">
               Email
             </label>
             <input
-              type="text"
+              id="email"
+              name="email"
+              type="email"
+              autoComplete="email"
               placeholder="Vui lòng nhập địa chỉ Email"
+              aria-label="Vui lòng nhập địa chỉ Email"
               required
             />
 
@@ -56,8 +146,11 @@ export default function Login() {
             </label>
 
             <input
+              id="password"
+              name="password"
               type="password"
               placeholder="Vui lòng nhập mật khẩu"
+              aria-label="Vui lòng nhập mật khẩu"
               required
             />
 
@@ -72,9 +165,47 @@ export default function Login() {
             <Link to="/register" className="link text-sm text-center">
               Bạn chưa có tài khoản? Đăng ký ngay!
             </Link>
-          </form>
+          </Form>
         </div>
       </div>
     </div>
+  );
+}
+
+const LOGIN_MUTATION = `#graphql
+  mutation customerAccessTokenCreate($input: CustomerAccessTokenCreateInput!) {
+    customerAccessTokenCreate(input: $input) {
+      customerUserErrors {
+        code
+        field
+        message
+      }
+      customerAccessToken {
+        accessToken
+        expiresAt
+      }
+    }
+  }
+`;
+
+export async function doLogin({storefront}, {email, password}) {
+  const data = await storefront.mutate(LOGIN_MUTATION, {
+    variables: {
+      input: {
+        email,
+        password,
+      },
+    },
+  });
+
+  if (data?.customerAccessTokenCreate?.customerAccessToken?.accessToken) {
+    return data.customerAccessTokenCreate.customerAccessToken.accessToken;
+  }
+
+  /**
+   * Something is wrong with the user's input.
+   */
+  throw new Error(
+    data?.customerAccessTokenCreate?.customerUserErrors.join(', '),
   );
 }

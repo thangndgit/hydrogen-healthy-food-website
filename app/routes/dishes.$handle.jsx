@@ -1,11 +1,13 @@
 import {useLoaderData} from '@remix-run/react';
-import {MediaFile} from '@shopify/hydrogen-react';
+import {AnalyticsPageType, MediaFile, Money} from '@shopify/hydrogen-react';
 import {json} from '@shopify/remix-oxygen';
 import {useState} from 'react';
 import ProductOptions from '~/components/ProductOptions';
 import {BiMinusCircle, BiPlusCircle} from 'react-icons/bi';
 import {fieldsToObject} from '~/utils/converters';
 import DishGrid from '~/components/DishGrid';
+import {AddToCartButton} from '~/components/AddToCartButton';
+import {ToastContainer, toast} from 'react-toastify';
 
 export async function loader({params, context, request}) {
   const {handle} = params;
@@ -28,13 +30,39 @@ export async function loader({params, context, request}) {
   const selectedVariant =
     product.selectedVariant ?? product?.variants?.nodes[0];
 
+  const productAnalytics = {
+    productGid: product.id,
+    variantGid: selectedVariant.id,
+    name: product.title,
+    variantName: selectedVariant.title,
+    brand: product.vendor,
+    price: selectedVariant.price.amount,
+  };
+
   const storeDomain = context.storefront.getShopifyDomain();
 
-  return json({product, selectedVariant, storeDomain});
+  return json({
+    product,
+    selectedVariant,
+    storeDomain,
+    analytics: {
+      pageType: AnalyticsPageType.product,
+      resourceId: product.id,
+      products: [productAnalytics],
+      totalValue: parseFloat(selectedVariant.price.amount),
+    },
+  });
+}
+
+export function meta({data}) {
+  return [
+    {title: data?.product?.title},
+    {description: data?.product?.description?.slice(0, 160)},
+  ];
 }
 
 export default function DishtHandle() {
-  const {product, selectedVariant} = useLoaderData();
+  const {product, selectedVariant, analytics} = useLoaderData();
   const [productCount, setProductCount] = useState(1);
 
   const orderable = selectedVariant?.availableForSale || false;
@@ -42,6 +70,11 @@ export default function DishtHandle() {
   const relatedProducts =
     product?.collections?.edges?.[0]?.node?.products?.edges;
   const collectionHandle = product?.collections?.edges?.[0]?.node?.handle;
+  const productAnalytics = {
+    ...analytics.products[0],
+    quantity: productCount,
+    totalValue: parseFloat(selectedVariant.price.amount * productCount),
+  };
 
   const increaseCount = () => {
     setProductCount(productCount + 1);
@@ -53,6 +86,18 @@ export default function DishtHandle() {
 
   return (
     <>
+      <ToastContainer
+        position="top-center"
+        autoClose={1500}
+        hideProgressBar={false}
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="light"
+      />
       <section className="w-[92vw] mx-auto mt-8 text-green-700 md:gap-8 grid">
         <div className="grid items-start gap-6 md:grid-cols-2 lg:grid-cols-3">
           <div className="grid md:grid-flow-row  md:p-0 md:overflow-x-hidden md:grid-cols-2 md:w-full lg:col-span-2">
@@ -91,26 +136,60 @@ export default function DishtHandle() {
             </div>
             <div className="flex gap-4">
               <div className="text-xl font-semibold mb-2">
-                {(
-                  Number(selectedVariant.price.amount) * productCount
-                ).toLocaleString('en-US')}{' '}
-                VNĐ
+                <Money
+                  withoutTrailingZeros
+                  data={{
+                    ...selectedVariant?.price,
+                    amount: String(
+                      selectedVariant?.price?.amount * productCount,
+                    ),
+                  }}
+                />
               </div>
               {selectedVariant.compareAtPrice?.amount >
                 selectedVariant.price?.amount && (
                 <div className="text-xl font-semibold mb-2 line-through opacity-50">
-                  {(
-                    Number(selectedVariant.compareAtPrice.amount) * productCount
-                  ).toLocaleString('en-US')}{' '}
-                  VNĐ
+                  <Money
+                    withoutTrailingZeros
+                    data={{
+                      ...selectedVariant?.compareAtPrice,
+                      amount: String(
+                        selectedVariant?.compareAtPrice?.amount * productCount,
+                      ),
+                    }}
+                  />
                 </div>
               )}
             </div>
             {orderable && (
               <div className="flex gap-4">
-                <button className="btn btn-outline-primary basis-0 grow">
+                <AddToCartButton
+                  lines={[
+                    {
+                      merchandiseId: selectedVariant?.id,
+                      quantity: productCount,
+                    },
+                  ]}
+                  data-test="add-to-cart"
+                  analytics={{
+                    products: [productAnalytics],
+                    totalValue: parseFloat(productAnalytics.price),
+                  }}
+                  onClick={() =>
+                    toast.success('Đã thêm sản phẩm vào giỏ', {
+                      position: 'top-center',
+                      autoClose: 1500,
+                      hideProgressBar: false,
+                      closeOnClick: true,
+                      pauseOnHover: true,
+                      draggable: true,
+                      progress: undefined,
+                      theme: 'light',
+                    })
+                  }
+                >
                   Thêm vào giỏ
-                </button>
+                </AddToCartButton>
                 <button className="btn btn-primary basis-0 grow">
                   Mua ngay
                 </button>
@@ -199,6 +278,7 @@ const PRODUCT_QUERY = `#graphql
       id
       title
       handle
+      description
       descriptionHtml
       collections(first: 1) {
         edges {
@@ -218,9 +298,11 @@ const PRODUCT_QUERY = `#graphql
                   priceRange {
                     minVariantPrice {
                       amount
+                      currencyCode
                     }
                     maxVariantPrice {
                       amount
+                      currencyCode
                     }
                   }
                 }

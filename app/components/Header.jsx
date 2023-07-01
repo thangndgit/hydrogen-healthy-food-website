@@ -211,14 +211,16 @@ function AccountLink({className}) {
 
   const isLoggedIn = root.data?.isLoggedIn;
 
+  if (isLoggedIn)
+    return (
+      <Link to="/account" className={className}>
+        <BiUser />
+        <span className="hidden whitespace-nowrap lg:block">Tài khoản</span>
+      </Link>
+    );
+
   return (
-    <Link
-      to={isLoggedIn ? '/account' : '/login'}
-      className={className}
-      onClick={() =>
-        isLoggedIn && alert('You need to login to use this feature')
-      }
-    >
+    <Link to="/login" className={className}>
       <BiUser />
       <span className="hidden whitespace-nowrap lg:block">Đăng nhập</span>
     </Link>
@@ -226,18 +228,8 @@ function AccountLink({className}) {
 }
 
 function CartLink({className}) {
-  const [root] = useMatches();
-
-  const isLoggedIn = root.data?.isLoggedIn;
-
   return (
-    <Link
-      to={isLoggedIn ? '/cart' : '/login'}
-      className={className}
-      onClick={() =>
-        isLoggedIn && alert('You need to login to use this feature!')
-      }
-    >
+    <Link to="/cart" className={className}>
       <BiCart />
       <span className="hidden whitespace-nowrap lg:block">Giỏ hàng</span>
     </Link>

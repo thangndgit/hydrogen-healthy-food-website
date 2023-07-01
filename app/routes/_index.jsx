@@ -444,9 +444,11 @@ const PRODUCTS_QUERY = `#graphql
           priceRange{
             minVariantPrice{
               amount
+              currencyCode
             }
             maxVariantPrice{
               amount
+              currencyCode
             }
           }
         }

@@ -41,7 +41,7 @@ export default function Footer() {
             </div>
           </div>
         </div>
-        <div className="flex flex-col ml-8 sm:m-auto sm:flex-row justify-between mt-6 lg:mt-8 max-w-5xl">
+        <div className="flex flex-col justify-between mt-6 ml-8 sm:m-auto sm:flex-row sm:mt-6 lg:mt-8 max-w-5xl">
           <div className="mb-6">
             <div className="font-bold mb-2">Menu</div>
             <ul className="list-inside list-disc">

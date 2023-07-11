@@ -1,57 +1,161 @@
 import {Link, useLoaderData} from '@remix-run/react';
+import {fieldsToObject} from '~/utils/converters';
+import DishGrid from '~/components/DishGrid';
 
 export async function loader({context}) {
-  const collections = await context.storefront.query(COLLECTIONS_QUERY);
+  const pureMenus = await context.storefront.query(MENUS_QUERY);
+  const pureProducts = await context.storefront.query(PRODUCTS_QUERY);
 
-  return collections;
+  const menus = pureMenus?.metaobjects?.edges?.map((menu) => ({
+    id: menu?.node?.id,
+    ...fieldsToObject(menu?.node?.fields),
+  }));
+
+  const products = pureProducts?.products?.edges?.map((prod) => {
+    const nutrients = fieldsToObject(prod?.node?.metafields);
+    const product = {
+      ...prod?.node,
+      ...nutrients,
+    };
+    delete product.metafields;
+    return product;
+  });
+
+  menus.forEach((menu) => {
+    const prods = products.filter((prod) => menu.products.includes(prod.id));
+    menu.products = prods;
+  });
+
+  return {menus};
 }
 
 export default function Menu() {
-  const {collections} = useLoaderData();
+  const {menus} = useLoaderData();
+
+  console.log(menus);
+  // console.log(products);
 
   return (
-    <section className="w-[92vw] mx-auto mt-8 text-green-700">
-      <h1 className="font-bold text-xl md:text-2xl mb-4 md:mb-8">
-        Danh mục đồ ăn
-      </h1>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-6">
-        {collections?.edges?.map((collection) => (
-          <CategoryCard
-            collection={collection?.node}
-            key={collection?.node?.id}
-          />
+    <>
+      {!menus.length && (
+        <section className="w-[92vw] mx-auto mt-8 text-green-700">
+          <h1 className="font-bold text-xl md:text-2xl mb-4">
+            Hiện chưa có thực đơn nào
+          </h1>
+        </section>
+      )}
+      {!!menus.length &&
+        menus.map((menu) => (
+          <section
+            className="w-[92vw] mx-auto mt-8 text-green-700"
+            key={menu.id}
+          >
+            <h1 className="font-bold text-xl md:text-2xl mb-4">{menu.title}</h1>
+            <MenuSlider products={menu.products} />
+          </section>
         ))}
-      </div>
-    </section>
+    </>
   );
 }
 
-function CategoryCard({collection}) {
+function MenuSlider({products}) {
   return (
-    <Link
-      to={`/categories/${collection.handle}`}
-      className="flex flex-col gap-3 mt-3 md:mt-0"
-    >
-      <div
-        style={{backgroundImage: `url('${collection?.image?.url}')`}}
-        className="card bg-center bg-cover aspect-square rounded-xl"
-      />
-      <div className="font-semibold text-lg">{collection.title}</div>
-    </Link>
+    <div className="slider gap-4 px-[1.5vw] no-scrollbar">
+      {products.map((prod) => (
+        <MenuCard
+          className="slider-item w-[82vw] max-w-[300px]"
+          data={prod}
+          key={prod.handle}
+        />
+      ))}
+    </div>
   );
 }
 
-const COLLECTIONS_QUERY = `#graphql
+function MenuCard({data, className}) {
+  return (
+    <div className={`card ${className}`}>
+      <Link
+        to={`/dishes/${data.handle}`}
+        className="flex flex-nowrap justify-center items-center text-center"
+      >
+        <div
+          style={{backgroundImage: `url('${data?.featuredImage?.url}')`}}
+          className="w-1/2 bg-center bg-cover aspect-square rounded-xl"
+        />
+        <div className="w-1/2 text-green-700">
+          <h3 className="font-bold">{data.title}</h3>
+          <p>Cỡ: 100 gram</p>
+          <p>
+            Dinh dưỡng: {data.protein * 100} g đạm, {data.fat * 100} g chất béo,{' '}
+            {data.carb * 100} g carbonhydrat, {data.kcal * 100} calories,{' '}
+          </p>
+        </div>
+      </Link>
+    </div>
+  );
+}
+
+const MENUS_QUERY = `#graphql
   query {
-    collections(first:20) {
+    metaobjects(type:"menu",first:100) {
+      edges {
+        node {
+          id
+          type
+          fields {
+            value
+            key
+          }
+          handle
+        }
+      }
+    }
+  }
+`;
+
+const PRODUCTS_QUERY = `#graphql
+  query {
+    products(first:250) {
       edges {
         node {
           id
           title
           handle
-          image {
-            id
+          totalInventory
+          featuredImage{
             url
+          }
+          priceRange{
+            minVariantPrice{
+              amount
+              currencyCode
+            }
+            maxVariantPrice{
+              amount
+              currencyCode
+            }
+          }
+          metafields(identifiers:[
+            {
+              namespace:"custom"
+              key:"protein"
+            },
+            {
+              namespace:"custom"
+              key:"fat"
+            },
+            {
+              namespace:"custom"
+              key:"carb"
+            },
+            {
+              namespace:"custom"
+              key:"kcal"
+            }
+          ]) {
+            key
+            value
           }
         }
       }

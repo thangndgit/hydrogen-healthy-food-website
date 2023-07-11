@@ -237,7 +237,7 @@ function MenuCard({data, className}) {
   return (
     <div className={`card ${className}`}>
       <Link
-        to={`/category/${data.handle}`}
+        to={`/categories/${data.handle}`}
         className="flex flex-nowrap justify-center items-center text-center"
       >
         <div

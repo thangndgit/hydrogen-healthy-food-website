@@ -7,7 +7,24 @@ export function imagePathToUrl(imagePath) {
 
 export function fieldsToObject(fields) {
   return fields.reduce((obj, field) => {
-    obj[field.key] = field.value;
+    let value;
+    try {
+      value = JSON.parse(field.value);
+    } catch (error) {
+      value = field.value;
+    }
+    obj[field.key] = value;
     return obj;
   }, {});
+}
+
+export function strToStandard(str) {
+  return str
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase();
+}
+
+export function strIncludeStandard(str1, str2) {
+  return strToStandard(str1).includes(strToStandard(str2));
 }

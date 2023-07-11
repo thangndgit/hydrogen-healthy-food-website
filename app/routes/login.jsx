@@ -20,11 +20,13 @@ export async function loader({context}) {
 
 const badRequest = (data) => json(data, {status: 400});
 
-export const action = async ({request, context, params}) => {
+export const action = async ({request, context}) => {
   const formData = await request.formData();
 
   const email = formData.get('email');
   const password = formData.get('password');
+  const acceptsMarketing = !!formData.get('acceptsMarketing');
+  const customer = {acceptsMarketing};
 
   if (!email || !password) {
     return badRequest({
@@ -50,7 +52,14 @@ export const action = async ({request, context, params}) => {
     const customerAccessToken = await doLogin(context, {email, password});
     session.set('customerAccessToken', customerAccessToken);
 
-    return redirect(params.lang ? `/${params.lang}/account` : '/account', {
+    await context.storefront.mutate(CUSTOMER_UPDATE_MUTATION, {
+      variables: {
+        customerAccessToken,
+        customer,
+      },
+    });
+
+    return redirect('/', {
       headers: {
         'Set-Cookie': await session.commit(),
       },
@@ -154,9 +163,20 @@ export default function Login() {
               required
             />
 
-            <Link to="/forget-password" className="link text-sm w-fit self-end">
-              Quên mật khẩu?
-            </Link>
+            <div className="flex justify-between">
+              <div className="flex items-center gap-1">
+                <input
+                  type="checkbox"
+                  id="acceptsMarketing"
+                  name="acceptsMarketing"
+                  defaultChecked
+                />
+                <span className="text-sm">Nhận ưu đãi</span>
+              </div>
+              <Link to="/forget-password" className="link text-sm w-fit">
+                Quên mật khẩu?
+              </Link>
+            </div>
 
             <button className="btn btn-primary font-semibold mt-3">
               Đăng nhập
@@ -183,6 +203,18 @@ const LOGIN_MUTATION = `#graphql
       customerAccessToken {
         accessToken
         expiresAt
+      }
+    }
+  }
+`;
+
+const CUSTOMER_UPDATE_MUTATION = `#graphql
+  mutation customerUpdate($customerAccessToken: String!, $customer: CustomerUpdateInput!) {
+    customerUpdate(customerAccessToken: $customerAccessToken, customer: $customer) {
+      customerUserErrors {
+        code
+        field
+        message
       }
     }
   }

@@ -61,7 +61,7 @@ export function meta({data}) {
   ];
 }
 
-export default function DishtHandle() {
+export default function DishHandle() {
   const {product, selectedVariant, analytics} = useLoaderData();
   const [productCount, setProductCount] = useState(1);
 
@@ -162,7 +162,7 @@ export default function DishtHandle() {
               )}
             </div>
             {orderable && (
-              <div className="flex gap-4">
+              <div className="grid gap-4 grid-cols-2">
                 <AddToCartButton
                   lines={[
                     {
@@ -190,8 +190,15 @@ export default function DishtHandle() {
                 >
                   Thêm vào giỏ
                 </AddToCartButton>
-                <button className="btn btn-primary basis-0 grow">
-                  Mua ngay
+                <button className="btn btn-primary">
+                  <a
+                    href={`https://fitmealsdeli.myshopify.com/cart/${selectedVariant?.id?.replace(
+                      /^.*\//,
+                      '',
+                    )}:${productCount}?payment=shop_pay`}
+                  >
+                    Mua ngay
+                  </a>
                 </button>
               </div>
             )}

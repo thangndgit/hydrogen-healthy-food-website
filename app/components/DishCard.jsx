@@ -33,7 +33,7 @@ export default function DishCard({product}) {
 
   return (
     <Link
-      to={`/dishes/${product.handle}`}
+      to={`/dishes/${product?.handle}`}
       className={`flex flex-col gap-2 mb-3 md:mb-0 ${
         !product?.totalInventory && 'opacity-50 pointer-events-none'
       }`}

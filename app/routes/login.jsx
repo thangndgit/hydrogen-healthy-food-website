@@ -102,7 +102,7 @@ export default function Login() {
         progress: undefined,
         theme: 'light',
       });
-  }, [actionData?.formError, actionData?.timeError]);
+  }, [actionData]);
 
   return (
     <div

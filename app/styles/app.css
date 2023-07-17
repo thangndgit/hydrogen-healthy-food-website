@@ -1,0 +1,7 @@
+.input-range__label--min,
+.input-range__label--max {
+  display: none;
+}
+.input-range__label {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+}

@@ -190,6 +190,10 @@ export async function loader({context}) {
   return {products: products.edges};
 }
 
+export const meta = () => {
+  return [{title: 'Giỏ hàng'}];
+};
+
 export default function CartRoute() {
   const [root] = useMatches();
   const {products} = useLoaderData();

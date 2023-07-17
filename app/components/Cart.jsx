@@ -143,9 +143,9 @@ function CartCheckoutActions({checkoutUrl}) {
   return (
     <div className="flex flex-col mt-2">
       <a href={checkoutUrl} target="_self">
-        <butt className="btn btn-primary" width="full">
+        <button className="btn btn-primary" width="full">
           Chuyển tới thanh toán
-        </butt>
+        </button>
       </a>
       {/* @todo: <CartShopPayButton cart={cart} /> */}
     </div>
@@ -155,7 +155,7 @@ function CartCheckoutActions({checkoutUrl}) {
 function CartSummary({cost, layout, children = null}) {
   const summary = {
     drawer: 'grid gap-4 p-6 border-t md:px-12',
-    page: 'sticky top-nav grid gap-6 p-4 md:px-6 md:translate-y-4 bg-primary/5 rounded w-full',
+    page: 'sticky top-nav grid gap-6 p-4 md:px-6 md:translate-y-4 bg-primary/5 rounded w-full border',
   };
 
   return (

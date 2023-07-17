@@ -15,7 +15,7 @@ export function AddToCartButton({
   const fetcherIsNotIdle = fetcher.state !== 'idle';
 
   return (
-    <fetcher.Form action="/cart" method="post" className="basis-0 grow">
+    <fetcher.Form action="/cart" method="post" className="whitespace-nowrap">
       <input type="hidden" name="cartAction" value={CartAction.ADD_TO_CART} />
       <input type="hidden" name="countryCode" value={selectedLocale.country} />
       <input type="hidden" name="lines" value={JSON.stringify(lines)} />

@@ -1,6 +1,7 @@
-import {Link, useLoaderData} from '@remix-run/react';
+import {useLoaderData} from '@remix-run/react';
 import {fieldsToObject} from '~/utils/converters';
-import DishGrid from '~/components/DishGrid';
+import InputRange from '@gollum-ts/react-input-range';
+import {useMemo, useState} from 'react';
 
 export async function loader({context}) {
   const pureMenus = await context.storefront.query(MENUS_QUERY);
@@ -32,66 +33,154 @@ export async function loader({context}) {
 export default function Menu() {
   const {menus} = useLoaderData();
 
-  console.log(menus);
-  // console.log(products);
+  const [nutrients, setNutrients] = useState({
+    protein: {min: 0, max: 100},
+    carb: {min: 0, max: 100},
+    fat: {min: 0, max: 100},
+    kcal: {min: 0, max: 100},
+  });
 
   return (
     <>
+      <section className="w-[92vw] mx-auto mt-8 text-green-700">
+        <h1 className="font-bold text-xl md:text-2xl mb-4">Gợi ý thực đơn</h1>
+        <form className="form">
+          <div className="flex items-center gap-4">
+            <label htmlFor="protein" className="w-32">
+              Protein
+            </label>
+            <InputRange
+              maxValue={100}
+              minValue={0}
+              value={nutrients.protein}
+              onChange={(value) => setNutrients({...nutrients, protein: value})}
+              id="protein"
+            />
+          </div>
+          <div className="flex items-center gap-4">
+            <label htmlFor="fat" className="w-32">
+              Chất béo
+            </label>
+            <InputRange
+              maxValue={100}
+              minValue={0}
+              value={nutrients.fat}
+              onChange={(value) => setNutrients({...nutrients, fat: value})}
+              id="fat"
+            />
+          </div>
+          <div className="flex items-center gap-4">
+            <label htmlFor="carb" className="w-32">
+              Carbohydrate
+            </label>
+            <InputRange
+              maxValue={100}
+              minValue={0}
+              value={nutrients.carb}
+              onChange={(value) => setNutrients({...nutrients, carb: value})}
+              id="carb"
+            />
+          </div>
+          <div className="flex items-center gap-4">
+            <label htmlFor="kcal" className="w-32">
+              Calories
+            </label>
+            <InputRange
+              maxValue={100}
+              minValue={0}
+              value={nutrients.kcal}
+              onChange={(value) => setNutrients({...nutrients, kcal: value})}
+              id="kcal"
+            />
+          </div>
+        </form>
+      </section>
       {!menus.length && (
         <section className="w-[92vw] mx-auto mt-8 text-green-700">
           <h1 className="font-bold text-xl md:text-2xl mb-4">
-            Hiện chưa có thực đơn nào
+            Hiện chưa có sẵn thực đơn nào
           </h1>
         </section>
       )}
-      {!!menus.length &&
-        menus.map((menu) => (
-          <section
-            className="w-[92vw] mx-auto mt-8 text-green-700"
-            key={menu.id}
-          >
-            <h1 className="font-bold text-xl md:text-2xl mb-4">{menu.title}</h1>
-            <MenuSlider products={menu.products} />
-          </section>
-        ))}
+      {!!menus.length && (
+        <section className="w-[92vw] mx-auto mt-8 text-green-700">
+          <h1 className="font-bold text-xl md:text-2xl mb-4">
+            Danh sách thực đơn
+          </h1>
+          <MenuGrid menus={menus} />
+        </section>
+      )}
     </>
   );
 }
 
-function MenuSlider({products}) {
+function MenuGrid({menus}) {
   return (
-    <div className="slider gap-4 px-[1.5vw] no-scrollbar">
-      {products.map((prod) => (
-        <MenuCard
-          className="slider-item w-[82vw] max-w-[300px]"
-          data={prod}
-          key={prod.handle}
-        />
+    <div className={`grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8`}>
+      {menus.map((menu) => (
+        <MenuCard menu={menu} key={menu?.id} />
       ))}
     </div>
   );
 }
 
-function MenuCard({data, className}) {
+function MenuCard({menu}) {
+  const dishesName = menu?.products?.map((prod) => prod.title).join(', ');
+  const nutrientsTotal = menu?.products?.reduce(
+    (nutrients, prod) => {
+      let sizeOption = prod.options.find((opt) => opt.name === 'Cỡ');
+      if (!sizeOption) sizeOption = {values: [100]};
+
+      const weights = sizeOption.values.map((val) => parseInt(val));
+      const minWeight = Math.min(...weights);
+      const maxWeight = Math.max(...weights);
+      const ntr = {
+        protein: prod.protein,
+        carb: prod.carb,
+        fat: prod.fat,
+        kcal: prod.kcal,
+      };
+
+      for (let key in ntr) {
+        const val = ntr[key] / 100;
+        nutrients.min[key] += val * minWeight;
+        nutrients.max[key] += val * maxWeight;
+      }
+
+      return nutrients;
+    },
+    {
+      min: {
+        protein: 0,
+        carb: 0,
+        kcal: 0,
+        fat: 0,
+      },
+      max: {
+        protein: 0,
+        carb: 0,
+        kcal: 0,
+        fat: 0,
+      },
+    },
+  );
+
+  const ntrToStr = (ntr = {protein: 0, carb: 0, kcal: 0, fat: 0}) =>
+    `${ntr.protein}g protein, ${ntr.fat}g fat, ${ntr.carb}g carb, ${ntr.kcal}kcal`;
+
   return (
-    <div className={`card ${className}`}>
-      <Link
-        to={`/dishes/${data.handle}`}
-        className="flex flex-nowrap justify-center items-center text-center"
-      >
-        <div
-          style={{backgroundImage: `url('${data?.featuredImage?.url}')`}}
-          className="w-1/2 bg-center bg-cover aspect-square rounded-xl"
-        />
-        <div className="w-1/2 text-green-700">
-          <h3 className="font-bold">{data.title}</h3>
-          <p>Cỡ: 100 gram</p>
-          <p>
-            Dinh dưỡng: {data.protein * 100} g đạm, {data.fat * 100} g chất béo,{' '}
-            {data.carb * 100} g carbonhydrat, {data.kcal * 100} calories,{' '}
-          </p>
-        </div>
-      </Link>
+    <div className={`grid md:grid-cols-2 gap-6 mb-6 md:mb-0`}>
+      <div
+        style={{backgroundImage: `url('${menu?.image_url}')`}}
+        className={`card aspect-square bg-center bg-cover`}
+      />
+      <div className="grid gap-3">
+        <h3 className="font-bold text-xl">{menu?.title}</h3>
+        <p>Thực đơn gồm: {dishesName}.</p>
+        <p>Dinh dưỡng tối thiểu: {ntrToStr(nutrientsTotal.min)}.</p>
+        <p>Dinh dưỡng tối đa: {ntrToStr(nutrientsTotal.max)}.</p>
+        <button className="btn btn-primary">Đặt ngay</button>
+      </div>
     </div>
   );
 }
@@ -125,6 +214,11 @@ const PRODUCTS_QUERY = `#graphql
           totalInventory
           featuredImage{
             url
+          }
+          options {
+            id
+            name
+            values
           }
           priceRange{
             minVariantPrice{

@@ -8,6 +8,8 @@ import {
 import tailwind from './styles/tailwind-build.css';
 import styles from './styles/app.css';
 import toastify from 'react-toastify/dist/ReactToastify.min.css';
+import puremodal from 'react-pure-modal/dist/react-pure-modal.min.css';
+import inputrange from '@gollum-ts/react-input-range/lib/css/index.css';
 import favicon from '../public/favicon.svg';
 import {Layout} from './components/Layout';
 import {Seo} from '@shopify/hydrogen';
@@ -19,6 +21,8 @@ export const links = () => {
     {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
     {rel: 'stylesheet', href: toastify},
+    {rel: 'stylesheet', href: puremodal},
+    {rel: 'stylesheet', href: inputrange},
     {rel: "manifest" , href: "/manifest.json"},
     {
       rel: 'preconnect',

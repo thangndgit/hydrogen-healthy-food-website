@@ -19,6 +19,7 @@ export const links = () => {
     {rel: 'stylesheet', href: tailwind},
     {rel: 'stylesheet', href: styles},
     {rel: 'stylesheet', href: toastify},
+    {rel: "manifest" , href: "/manifest.json"},
     {
       rel: 'preconnect',
       href: 'https://cdn.shopify.com',
@@ -60,6 +61,11 @@ export default function App() {
         </Layout>
         <ScrollRestoration />
         <Scripts />
+        {/* <script>
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' });
+}
+</script> */}
       </body>
     </html>
   );

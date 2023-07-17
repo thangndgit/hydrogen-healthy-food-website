@@ -23,6 +23,7 @@ export const links = () => {
     {rel: 'stylesheet', href: toastify},
     {rel: 'stylesheet', href: puremodal},
     {rel: 'stylesheet', href: inputrange},
+    {rel: "manifest" , href: "/manifest.json"},
     {
       rel: 'preconnect',
       href: 'https://cdn.shopify.com',
@@ -64,6 +65,11 @@ export default function App() {
         </Layout>
         <ScrollRestoration />
         <Scripts />
+        {/* <script>
+if('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js', { scope: '/' });
+}
+</script> */}
       </body>
     </html>
   );

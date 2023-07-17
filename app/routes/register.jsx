@@ -6,6 +6,7 @@ import {imagePathToUrl} from '~/utils/converters';
 import {ToastContainer, toast} from 'react-toastify';
 import {useEffect} from 'react';
 import {doLogin} from './login';
+// import { CUSTOMER_CREATE_MUTATION } from './<path-to-your-graphql-file>';
 
 export async function loader({context}) {
   const customerAccessToken = await context.session.get('customerAccessToken');
@@ -26,8 +27,12 @@ export const action = async ({request, context}) => {
   const email = formData.get('email');
   const password = formData.get('password');
   const confirmPassword = formData.get('confirmPassword');
+  const firstName = formData.get('firstName');
+  const phone = formData.get('phone');
+  const lastName = formData.get("lastName")
+  const acceptsMarketing = true;
 
-  if (!email || !password || !confirmPassword) {
+  if (!email || !password || !confirmPassword || !firstName || !phone || !lastName) {
     return badRequest({
       formError: 'Bạn chưa nhập đủ thông tin',
       timeError: new Date(),
@@ -51,7 +56,12 @@ export const action = async ({request, context}) => {
       timeError: new Date(),
     });
   }
-
+  if (phone.length !== 10) {
+    return badRequest({
+      formError: 'Số điện thoại phải có đúng 10 chữ số',
+      timeError: new Date(),
+    });
+  }  
   if (password !== confirmPassword) {
     return badRequest({
       formError: 'Mật khẩu xác nhận không khớp',
@@ -62,7 +72,7 @@ export const action = async ({request, context}) => {
   try {
     const data = await storefront.mutate(CUSTOMER_CREATE_MUTATION, {
       variables: {
-        input: {email, password},
+        input: {email, password, first: firstName, phone, last: lastName,},
       },
     });
 
@@ -87,6 +97,7 @@ export const action = async ({request, context}) => {
       return badRequest({
         formError: 'Có lỗi xảy ra. Vui lòng thử lại sau',
         timeError: new Date(),
+        message: error.message
       });
     }
 
@@ -97,6 +108,7 @@ export const action = async ({request, context}) => {
     return badRequest({
       formError: 'Tài khoản sử dụng email này đã tồn tại trên hệ thống',
       timeError: new Date(),
+      message: error.message.response
     });
   }
 };
@@ -126,6 +138,9 @@ export default function Register() {
       });
   }, [actionData?.formError, actionData?.timeError]);
 
+  // const handleRegister = async (values) => {
+  //   const response = await axios
+  // }
   return (
     <div
       id="page-register"
@@ -151,6 +166,8 @@ export default function Register() {
               altText: 'logo',
               url: imagePathToUrl(logoImg),
             }}
+            width={200}
+            className='mx-auto'
           />
 
           <div className="flex text-lg items-center gap-6">
@@ -160,6 +177,39 @@ export default function Register() {
           </div>
 
           <Form method="post" noValidate className="form">
+          <form action="#">
+          
+          </form>
+          <label htmlFor="name" className="mt-2">
+              Họ và tên
+            </label>
+            <div className='grid grid-cols-2 gap-2' >
+            <input 
+             id='firstName'
+             name='firstName'
+             type="firstName" 
+             autoComplete='firstName'
+             placeholder='Họ ' 
+             required />
+              <input 
+             id='lastName'
+             name='lastName'
+             type="lastName" 
+             autoComplete='lastName'
+             placeholder='Tên' 
+             required />
+            </div>
+          <label htmlFor="number" className="mt-2">
+              Số điện thoại
+            </label>
+          <input 
+             id='phone'
+             name='phone'
+             type="phone"
+             autoComplete='phone' 
+             placeholder='Số điện thoại' 
+            required />
+            
             <label htmlFor="email" className="mt-2">
               Email
             </label>

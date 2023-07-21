@@ -16,7 +16,6 @@ export default function OrderDetailModal({
         return true;
       }}
     >
-      <div>hihi</div>
       <div>{JSON.stringify(order)}</div>
     </PureModal>
   );

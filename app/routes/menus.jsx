@@ -454,6 +454,7 @@ function SuggestOptionModal({isOpen, onClose, width = '384px', menu}) {
       ))}
       <fetcher.Form action="/cart" method="post" className="whitespace-nowrap">
         <input type="hidden" name="cartAction" value={CartAction.ADD_TO_CART} />
+        <input type="hidden" name="getId" value={true} />
         <input
           type="hidden"
           name="lines"

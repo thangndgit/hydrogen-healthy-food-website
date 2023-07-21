@@ -196,6 +196,8 @@ export default function DishHandle() {
                       /^.*\//,
                       '',
                     )}:${productCount}?payment=shop_pay`}
+                    target="__blank"
+                    className="w-full h-full inline-block"
                   >
                     Mua ngay
                   </a>

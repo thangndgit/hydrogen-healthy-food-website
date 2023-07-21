@@ -1,9 +1,11 @@
+/* eslint-disable eslint-comments/disable-enable-pair */
+/* eslint-disable eslint-comments/no-duplicate-disable */
+/* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable jsx-a11y/no-noninteractive-element-interactions */
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable eslint-comments/disable-enable-pair */
 /* eslint-disable hydrogen/prefer-image-component */
 
-import {Link} from '@remix-run/react';
 import {Money, flattenConnection} from '@shopify/hydrogen-react';
 import {dateToDateTimeString} from '~/utils/converters';
 import OrderDetailModal from '~/components/OrderDetailModal';

@@ -54,7 +54,11 @@ export async function action({request, context}) {
 
       cartId = result.cart.id;
 
-      break;
+      return json({
+        formSuccess: 'Cập nhật thông tin thành công',
+        cartId,
+      });
+
     case CartAction.REMOVE_FROM_CART:
       var lineIds = formData.get('linesIds')
         ? JSON.parse(String(formData.get('linesIds')))

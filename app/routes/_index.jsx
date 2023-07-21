@@ -18,22 +18,35 @@ export function meta() {
 }
 
 export async function loader({context}) {
-  const banners = await context.storefront.query(BANNERS_QUERY);
-  const products = await context.storefront.query(PRODUCTS_QUERY);
-  const collections = await context.storefront.query(COLLECTIONS_QUERY);
+  let menus = await context.storefront.query(MENUS_QUERY);
+  let banners = await context.storefront.query(BANNERS_QUERY);
+  let products = await context.storefront.query(PRODUCTS_QUERY);
+  let collections = await context.storefront.query(COLLECTIONS_QUERY);
+
+  menus = menus.metaobjects?.edges?.map((menu) => ({
+    id: menu?.node?.id,
+    ...fieldsToObject(menu?.node?.fields),
+  }));
+
+  banners = banners?.metaobjects?.edges?.map((banner) => ({
+    id: banner?.node?.id,
+    ...fieldsToObject(banner?.node?.fields),
+  }));
+
+  products = products?.products?.edges;
+
+  collections = collections?.collections?.nodes;
 
   return {
-    banners: banners?.metaobjects?.edges?.map((banner) => ({
-      id: banner?.node?.id,
-      ...fieldsToObject(banner?.node?.fields),
-    })),
-    products: products?.products?.edges,
-    collections: collections?.collections?.nodes,
+    menus,
+    banners,
+    products,
+    collections,
   };
 }
 
 export default function Index() {
-  const {banners, products, collections} = useLoaderData();
+  const {menus, banners, products, collections} = useLoaderData();
 
   return (
     <>
@@ -55,7 +68,7 @@ export default function Index() {
       </section>
       <section className="w-[92vw] mx-auto mt-8 text-green-700">
         <h1 className="font-bold text-xl md:text-2xl mb-4">Thực đơn hôm nay</h1>
-        <MenuSlider />
+        <MenuSlider menus={menus} />
       </section>
       <section className="w-[92vw] mx-auto mt-8 text-green-700">
         <InfoBanner />
@@ -150,7 +163,7 @@ function MenuBanner() {
       className="bg-left bg-cover w-full h-[300px] rounded-2xl"
     >
       <Link
-        to="/menu"
+        to="/menus"
         className="p-6 h-full drop-shadow-[0_1.2px_1.2px_rgba(0,0,0,0.8)] bg-gradient-to-b from-transparent to-[rgba(0,0,0,0.25)] opacity-90 flex flex-col gap-4 justify-center items-center font-bold text-xl md:text-2xl text-center rounded-2xl"
       >
         <p>Bạn có chế độ ăn khắt khe?</p>
@@ -160,65 +173,14 @@ function MenuBanner() {
   );
 }
 
-function MenuSlider() {
-  const menus = [
-    {
-      name: 'Ăn kiêng 1',
-      handle: 'an-kieng-1',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 4,
-      calories: 1200,
-    },
-    {
-      name: 'Ăn kiêng 2',
-      handle: 'an-kieng-2',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 3,
-      calories: 700,
-    },
-    {
-      name: 'Gymer 1',
-      handle: 'gymer-1',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 3,
-      calories: 2700,
-    },
-    {
-      name: 'Gymer 2',
-      handle: 'gymer-2',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 5,
-      calories: 3200,
-    },
-    {
-      name: 'Gymer 3',
-      handle: 'gymer-3',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 3,
-      calories: 2500,
-    },
-    {
-      name: 'Low carbs',
-      handle: 'low-carbs',
-      imageUrl:
-        'https://content.jdmagicbox.com/comp/ahmedabad/x5/079pxx79.xx79.180903204439.j4x5/catalogue/pape-the-burgerwala-mithakhali-ahmedabad-burger-joints-dntnsuwfw9-250.jpg',
-      count: 3,
-      calories: 1200,
-    },
-  ];
-
+function MenuSlider({menus}) {
   return (
     <div className="slider gap-4 px-[1.5vw] no-scrollbar">
       {menus.map((menu) => (
         <MenuCard
           className="slider-item w-[82vw] max-w-[300px]"
           data={menu}
-          key={menu.handle}
+          key={menu.id}
         />
       ))}
       <div className="card slider-item w-[175px]">
@@ -237,17 +199,16 @@ function MenuCard({data, className}) {
   return (
     <div className={`card ${className}`}>
       <Link
-        to={`/categories/${data.handle}`}
+        to={`/menus?menuId="${data.title}"`}
         className="flex flex-nowrap justify-center items-center text-center"
       >
         <div
-          style={{backgroundImage: `url('${data.imageUrl}')`}}
+          style={{backgroundImage: `url('${data.image_url}')`}}
           className="w-1/2 bg-center bg-cover aspect-square rounded-xl"
         />
         <div className="w-1/2 text-green-700">
-          <h3 className="font-bold">{data.name}</h3>
-          <p>{`${data.count} món`}</p>
-          <p>{`${data.calories.toLocaleString()} kcal`}</p>
+          <h3 className="font-bold">{data.title}</h3>
+          <p>{`${data.products.length} món`}</p>
         </div>
       </Link>
     </div>
@@ -429,6 +390,24 @@ const BANNERS_QUERY = `#graphql
   }
 `;
 
+const MENUS_QUERY = `#graphql
+  query {
+    metaobjects(type:"menu",first:100) {
+      edges {
+        node {
+          id
+          type
+          fields {
+            value
+            key
+          }
+          handle
+        }
+      }
+    }
+  }
+`;
+
 const PRODUCTS_QUERY = `#graphql
   query {
     products(first:9) {
@@ -440,6 +419,11 @@ const PRODUCTS_QUERY = `#graphql
           totalInventory
           featuredImage{
             url
+          }
+          options {
+            id
+            name
+            values
           }
           priceRange{
             minVariantPrice{

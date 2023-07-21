@@ -236,7 +236,7 @@ export default function Account() {
           Xin chào {customer.firstName ?? ''}
         </h1>
         <Form method="post" action="/account/logout">
-          <button type="submit" className="btn btn-primary">
+          <button type="submit" className="btn btn-primary px-4">
             Đăng xuất
           </button>
         </Form>

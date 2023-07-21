@@ -23,7 +23,7 @@ export const links = () => {
     {rel: 'stylesheet', href: toastify},
     {rel: 'stylesheet', href: puremodal},
     {rel: 'stylesheet', href: inputrange},
-    {rel: "manifest" , href: "/manifest.json"},
+    {rel: 'manifest', href: '/manifest.json'},
     {
       rel: 'preconnect',
       href: 'https://cdn.shopify.com',

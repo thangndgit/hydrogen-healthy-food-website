@@ -142,12 +142,11 @@ function CartCheckoutActions({checkoutUrl}) {
 
   return (
     <div className="flex flex-col mt-2">
-      <a href={checkoutUrl} target="_self">
+      <a href={checkoutUrl} target="__blank">
         <button className="btn btn-primary" width="full">
           Chuyển tới thanh toán
         </button>
       </a>
-      {/* @todo: <CartShopPayButton cart={cart} /> */}
     </div>
   );
 }

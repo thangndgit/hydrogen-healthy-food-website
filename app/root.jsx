@@ -66,10 +66,10 @@ export default function App() {
         <ScrollRestoration />
         <Scripts />
         {/* <script>
-if('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('/sw.js', { scope: '/' });
-}
-</script> */}
+          if('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js', { scope: '/' });
+          }
+        </script> */}
       </body>
     </html>
   );

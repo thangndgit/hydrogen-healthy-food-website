@@ -152,7 +152,7 @@ function DesktopHeader({menu, pathname}) {
     >
       {pathname === '/' && (
         <div className="bg-white px-12 py-4 flex items-center justify-between w-full gap-8 text-black">
-          <span>Bạn cần giúp đỡ? Liên hệ 0987654321</span>
+          <span>Bạn cần giúp đỡ? Liên hệ 0356327728</span>
           <span className="font-semibold">Miễn phí giao đơn hàng đầu tiên</span>
         </div>
       )}

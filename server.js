@@ -51,6 +51,7 @@ export default {
         getLoadContext: () => ({session, storefront, env}),
       });
 
+      // console.log('HELLO', request);
       const response = await handleRequest(request);
 
       if (response.status === 404) {
@@ -77,8 +78,8 @@ export default {
  * swap out the cookie-based implementation with something else!
  */
 class HydrogenSession {
-  sessionStorage;
-  session;
+  // sessionStorage;
+  // session;
   constructor(sessionStorage, session) {
     this.sessionStorage = sessionStorage;
     this.session = session;

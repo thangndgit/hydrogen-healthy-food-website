@@ -36,7 +36,7 @@ export default function Footer() {
               <BiHeadphone size="3rem" />
               <div>
                 <div>Tổng đài hỗ trợ 24/7</div>
-                <div>(+84) 0987654321</div>
+                <div>(+84) 356327728</div>
               </div>
             </div>
           </div>
@@ -120,8 +120,8 @@ export default function Footer() {
                   Instagram
                 </Link>
               </li>
-              <li>(+84) 987654321</li>
-              <li>66 Giải Phóng</li>
+              <li>(+84) 356327728</li>
+              <li>Trường TH, THCS và THPT FPT Bắc Giang</li>
             </ul>
           </div>
         </div>

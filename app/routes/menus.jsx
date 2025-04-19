@@ -31,8 +31,13 @@ export async function loader({context}) {
     let prods = products.filter((prod) => menu.products.includes(prod.id));
 
     prods.forEach((prod) => {
-      let sizeOption = prod.options.find((opt) => opt.name === 'Cỡ');
+      let sizeOption = prod.options.find(
+        (opt) =>
+          opt.name === 'Cỡ' || opt.name === 'Size' || opt.name === 'Khẩu phần',
+      );
+
       prod.options = prod.options.filter((opt) => opt.name !== 'Title');
+
       if (!sizeOption) {
         sizeOption = {name: 'Cỡ', values: ['100 gram']};
         prod.options.push(sizeOption);
@@ -174,6 +179,7 @@ function MenuSearch({menus, onSearch}) {
       newProducts.push(weight);
 
       const newVariants = [...currentNutrition.variants];
+
       const variant = product.variants.nodes.find((v) =>
         v.title.includes(weight),
       ).id;
@@ -362,7 +368,13 @@ function MenuSuggestCard({menu, onOpenModal}) {
   return (
     <div className={`grid md:grid-cols-2 gap-6 mb-6`}>
       <div
-        style={{backgroundImage: `url('${menu?.image_url}')`}}
+        style={{
+          backgroundImage: `url('${
+            menu?.image_url ||
+            menu?.products?.find((p) => p?.featuredImage?.url)?.featuredImage
+              ?.url
+          }')`,
+        }}
         className={`card aspect-square bg-center bg-cover`}
       />
       <div className="grid gap-3">
@@ -389,6 +401,7 @@ function SuggestOptionModal({isOpen, onClose, width = '384px', menu}) {
   const fetcher = useFetcher();
 
   const [selectedId, setSelectedId] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   const ntrToStr = (ntr = {protein: 0, carb: 0, kcal: 0, fat: 0}) =>
     `${Math.round(100 * ntr.protein) / 100}g đạm, ${
@@ -424,6 +437,7 @@ function SuggestOptionModal({isOpen, onClose, width = '384px', menu}) {
       width={width}
       scrollable={true}
       onClose={() => {
+        setSelectedId(null);
         onClose();
         return true;
       }}
@@ -432,7 +446,13 @@ function SuggestOptionModal({isOpen, onClose, width = '384px', menu}) {
         {menu.title}
       </h3>
       <div
-        style={{backgroundImage: `url('${menu?.image_url}')`}}
+        style={{
+          backgroundImage: `url('${
+            menu?.image_url ||
+            menu?.products?.find((p) => p?.featuredImage?.url)?.featuredImage
+              ?.url
+          }')`,
+        }}
         className={`card aspect-square bg-center bg-cover mb-4`}
       />
       <div className="mb-4">{menu.description}</div>
@@ -467,10 +487,19 @@ function SuggestOptionModal({isOpen, onClose, width = '384px', menu}) {
         />
         <button
           type="submit"
-          className={`btn btn-primary w-full`}
-          disabled={!selectedId}
+          className={`btn btn-primary w-full ${
+            isLoading || (!selectedId && selectedId !== 0)
+              ? 'opacity-50 cursor-not-allowed'
+              : ''
+          }`}
+          disabled={!selectedId && selectedId !== 0}
+          onClick={() => setIsLoading(true)}
         >
-          Đặt ngay
+          {isLoading
+            ? 'Vui lòng chờ . . .'
+            : !selectedId && selectedId !== 0
+            ? 'Vui lòng chọn món'
+            : 'Đặt ngay'}
         </button>
       </fetcher.Form>
     </PureModal>
@@ -504,7 +533,10 @@ function MenuCard({menu, active}) {
 
   const nutrientsTotal = menu?.products?.reduce(
     (nutrients, prod) => {
-      let sizeOption = prod.options.find((opt) => opt.name === 'Cỡ');
+      let sizeOption = prod.options.find(
+        (opt) =>
+          opt.name === 'Cỡ' || opt.name === 'Size' || opt.name === 'Khẩu phần',
+      );
 
       const weights = sizeOption.values.map((val) =>
         parseInt(parseInt(String(val).replace(/\D/g, ''), 10)),
@@ -533,7 +565,13 @@ function MenuCard({menu, active}) {
   return (
     <div className={`grid md:grid-cols-2 gap-6 mb-6`} ref={componentRef}>
       <div
-        style={{backgroundImage: `url('${menu?.image_url}')`}}
+        style={{
+          backgroundImage: `url('${
+            menu?.image_url ||
+            menu?.products?.find((p) => p?.featuredImage?.url)?.featuredImage
+              ?.url
+          }')`,
+        }}
         className={`card aspect-square bg-center bg-cover`}
       />
       <div className="grid gap-3">
@@ -547,7 +585,12 @@ function MenuCard({menu, active}) {
         <p>
           <b>Dinh dưỡng tối đa:</b> {ntrToStr(nutrientsTotal.max)}.
         </p>
-        <button className="btn btn-primary">Đặt ngay</button>
+        {/* <button
+          className="btn btn-primary"
+          onClick={() => window.scrollTo({top: 0, behavior: 'smooth'})}
+        >
+          Tính toán dinh dưỡng
+        </button> */}
       </div>
     </div>
   );
